@@ -21,7 +21,8 @@
     "mocha": "^5.2.0"
   },
   "scripts": {
-    "test": "mocha"
+    "start": "node index.js",
+    "dev": "NODE_ENV=dev node index.js"
   },
   "repository": {
     "type": "git",

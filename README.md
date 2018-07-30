@@ -18,8 +18,26 @@ node index.js
 
 ### HTTP_REQUEST_TIMEOUT
 
-> 请求超时的分钟数
+> 请求超时的分钟数 默认1分钟
 
 ### HTTP_RESPONSE_TIMEOUT
 
-> 设置 socket 的超时时间 分钟
+> 设置 socket 的超时时间 默认1分钟
+
+### WRITE_STREAM_DEFAULT
+
+```js
+{
+    flags: 'w',
+    encoding: 'UTF-8',
+    fd: null,
+    mode: 0o666,
+    autoClose: true
+}
+```
+
+> 文件
+
+## 生成文件
+
+> 默认路径 当前目录下  data/chinese/${random}.json  文件名随机生成
