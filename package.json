@@ -1,14 +1,37 @@
 {
+  "name": "siwi-area",
+  "version": "1.0.0",
+  "description": "国家统计局城乡划分",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
   "dependencies": {
     "bluebird": "^3.5.1",
     "cheerio": "^1.0.0-rc.2",
     "iconv-lite": "^0.4.23",
-    "siwi-mkdirs": "^1.0.0"
+    "siwi-mkdirs": "^1.0.0",
+    "siwi-uniquestring": "^1.0.4"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.8",
     "@types/node": "^10.5.4",
     "chai": "^4.1.2",
     "mocha": "^5.2.0"
-  }
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/siwilizhao/siwi-area.git"
+  },
+  "keywords": ["area", "chinese area"],
+  "author": "siwilizhao",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/siwilizhao/siwi-area/issues"
+  },
+  "homepage": "https://github.com/siwilizhao/siwi-area#readme"
 }

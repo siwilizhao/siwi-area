@@ -1,16 +1,27 @@
-const request = require('./lib/request')
-const cheerio = require('cheerio')
-const baseDomain = `http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2009`
-const mkdirs = require('siwi-mkdirs')
 const fs = require('fs')
 const path = require('path')
-
+const utils = require('./utils')
+const cheerio = require('cheerio')
+const mkdirs = require('siwi-mkdirs')
+const request = require('./lib/request')
+const unique = require('siwi-uniquestring')
+const { WRITE_STREAM_DEFAULT } = require('./config')
+const baseDomain = `http://www.stats.gov.cn/tjsj/tjbz/tjyqhdmhcxhfdm/2009`
 class Spider {
     constructor() {
-        this.getHtml(`${baseDomain}/index.html`)
+        this.getProvinces(`${baseDomain}/index.html`)
     }
-    async getHtml(uri) {
-        const html = await request.get(uri)
+
+    /**
+     * 获取省份列表
+     * @param {String} uri 
+     */
+    async getProvinces(uri) {
+        let html = await request.get(uri)
+        while (!html) {
+            await utils.log(`[getProvinces] 重新获取： ${uri}`)
+            html = await request.get(uri)
+        }
         const $ = cheerio.load(html)
         const chinese = {}
         $('.provincetr td').each((i, e) => {
@@ -22,49 +33,72 @@ class Spider {
         })
         for (const province in chinese) {
             const uri = chinese[province]
-            if (uri ) {
+            if (uri) {
                 chinese[province] = await this.getCity(uri)
             } else {
                 chinese[province] = []
             }
         }
-        const defaults = {
-            flags: 'w',
-            encoding: 'UTF-8',
-            fd: null,
-            mode: 0o666,
-            autoClose: true
-        };
         const save_path = path.resolve('data/chinese')
         if (!fs.existsSync(save_path)) {
             await mkdirs.multi(save_path)
         }
-        const stream = fs.createWriteStream(`${save_path}/area.json`, defaults);
+        const filename = await unique.random()
+        const stream = fs.createWriteStream(`${save_path}/${filename}.json`, WRITE_STREAM_DEFAULT);
         stream.write(JSON.stringify(chinese))
     }
+
+    /**
+     * 获取省份城市
+     * @param {String} uri 
+     */
     async getCity(uri) {
-        const html = await request.get(uri)
+        let html = await request.get(uri)
+        while (!html) {
+            await utils.log(`[getCity] 重新获取： ${uri}`)
+            html = await request.get(uri)
+        }
         const $ = cheerio.load(html)
-        const result = {}
-        $('.citytr').each(async (i, e) => {
+        const province = {}
+        $('.citytr').each((i, e) => {
             const title = $(e).children('td').last().text()
             const link = $(e).children('td').last().find('a').attr('href')
+            province[title] = `${baseDomain}/${link}`
             if (link) {
-                const href = `${baseDomain}/${link}`
-                result[title] = await this.getCountry(href)
+                province[title] = `${baseDomain}/${link}`
+            } else {
+                province[title] = false
             }
         })
-        return result
+
+        for (const city in province) {
+            const uri = province[city]
+            if (uri) {
+                province[city] = await this.getCountry(uri)
+            } else {
+                province[city] = []
+            }
+        }
+        return province
     }
+
+    /**
+     * 获取城市区域
+     * @param {String} uri 
+     */
     async getCountry(uri) {
-        const html = await request.get(uri)
+        let html = await request.get(uri)
+        while (!html) {
+            utils.log(`[getCountry] 重新获取： ${uri}`)
+            html = await request.get(uri)
+        }
         const $ = cheerio.load(html)
-        const result = []
-        $('.countytr').each(async (i, e) => {
+        const city = []
+        $('.countytr').each((i, e) => {
             const title = $(e).children('td').last().text()
-            result.push(title)
+            city.push(title)
         })
-        return result
+        return city
     }
 }
 module.exports = new Spider()
